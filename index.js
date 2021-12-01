@@ -11,6 +11,7 @@ var passport = require("passport");
 const express = require("express");
 const multer = require("multer");
 var asyc = require("async");
+require("dotenv").config();
 const app = express();
 
 // Middleware
@@ -37,9 +38,13 @@ app.use(function (req, res, next) {
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-const mongoURI = "mongodb://localhost:27017/test_db";
-mongoose.connect(mongoURI);
-const conn = mongoose.createConnection(mongoURI);
+
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useUnifiedTopology', true);
+
+mongoose.connect(process.env.MONGO_URI);
+
+const conn = mongoose.createConnection(process.env.MONGO_URI);
 
 let gfs;
 let loggedInUser;
@@ -92,7 +97,7 @@ app.get("/up/:id", isLoggedIn, fetchDetails, (req, res) => {
 // @desc  Uploads file to DB
 app.post("/upload", (req, res) => {
   const storage = new GridFsStorage({
-    url: mongoURI,
+    url: process.env.MONGO_URI,
     file: (req, file) => {
       return {
         filename: file.originalname.split(" ").join("_"),
